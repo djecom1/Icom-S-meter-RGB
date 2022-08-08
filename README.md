@@ -8,3 +8,5 @@ https://www.robot-maker.com/shop/blog/52_controler-led-rvb-arduino.html
 ![Alt text](https://github.com/djecom1/Icom-S-meter-RGB/blob/main/Icom_CI-V_S-meter.jpg "Icom_CI-V_S-meter")
 
 ![Alt text](https://github.com/djecom1/Icom-S-meter-RGB/blob/main/RGB.jpg "RGB")
+
+![Alt text](https://github.com/djecom1/Icom-S-meter-RGB/blob/main/CI-V_HEX.PNG "CI-V")
