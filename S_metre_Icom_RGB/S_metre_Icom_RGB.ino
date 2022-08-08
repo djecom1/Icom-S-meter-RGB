@@ -4,7 +4,7 @@
 
 #include <SoftwareSerial.h> // for comms to IC7000
 #define BAUD_RATE 19200     // CI-V speed
-#define TRX_address (0x70)  // HEX $70 = Icom IC-7000
+#define TRX_address (0x00)  // HEX $70 = Icom IC-7000
 //#define TRX_address ((byte)00)  // $00: Icom universal address (works for all radios).
 
 // serial connection
