@@ -1,6 +1,7 @@
 // IC7300 Testbed for S-meter readout and other functions
 // by Luc Decroos - ON7DQ/KF0CR
 // modified & adapted by Daniel VE2BAP, 2018-12-01
+// modified & adapted by Jerome F4GMU, 2022-10-16
 
 #include <SoftwareSerial.h> // for comms to IC7000
 #define BAUD_RATE 19200     // CI-V speed
@@ -114,7 +115,7 @@ void sMeter() {
     mySerial.flush();
 
     // start sequence: send "read S meter" command to radio.
-    mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(0x88); mySerial.write(0xE0);
+    mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(TRX_address); mySerial.write(0xE0);
     mySerial.write(0x15); mySerial.write(0x02); // Read s-meter , command 15 02
     mySerial.write(0xFD); // end sequence
     delay(20);
@@ -144,7 +145,7 @@ void powerMeter() {
     mySerial.flush();
 
     // start sequence: send "read S meter" command to radio.
-    mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(0x88); mySerial.write(0xE0);
+    mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(TRX_address); mySerial.write(0xE0);
     mySerial.write(0x15); mySerial.write(0x11); // Read power-meter , command 15 11
     mySerial.write(0xFD); // end sequence
     delay(20);
