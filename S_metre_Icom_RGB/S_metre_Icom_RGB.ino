@@ -20,6 +20,18 @@ int sMeterVal2;  // stores the least significant BCD byte containing signal info
 int trxVal1;     // TRX info
 int sMeterOut = 11; // External analog S-meter connected to pin 11.
 
+const int sPwr = 8; // Constante pour la broche 8
+const int sSwr = 9; // Constante pour la broche 9
+const int sAlc = 10; // Constante pour la broche 10
+const int sComp = 4; // Constante pour la broche 4
+const int sVolt = 12; // Constante pour la broche 12
+
+/*int pwrState;
+int swrState;
+int alcState;
+int compState;
+int voltState;*/
+
 // Const RGB
 void ledRVBpwm(int pwmRouge, int pwmVert, int pwmBleu);
 
@@ -40,13 +52,19 @@ void setup()
   pinMode(7, OUTPUT); // CI-V serial communication to IC7000
   pinMode(sMeterOut, OUTPUT); // set sMeterPin for output
 
+  pinMode(sPwr, INPUT_PULLUP);  // Switch power (pin 8)
+  pinMode(sSwr, INPUT_PULLUP);  // Switch SWR (pin 9)
+  pinMode(sAlc, INPUT_PULLUP);  // Switch ALC (pin 10)
+  pinMode(sComp, INPUT_PULLUP);  // Switch Comp. (pin 4)
+  pinMode(sVolt, INPUT_PULLUP);  // Switch Volt (pin 12)
+
   pinMode (ledVert, OUTPUT);  //LED verte
   pinMode (ledRouge, OUTPUT); //LED rouge
   pinMode (ledBleu, OUTPUT);  //LED bleu
 
-  analogWrite(sMeterOut, 255); // Test meter
+  analogWrite(sMeterOut, 200); // Test meter
   delay(1000);
-  analogWrite(sMeterOut, 128);
+  analogWrite(sMeterOut, 100);
   delay(1000);
   analogWrite(sMeterOut, 0);
   delay(1000);
@@ -60,6 +78,8 @@ void setup()
 //---------------------------------------------------------------------------------------------
 
 void loop() {
+  
+  
   mySerial.flush();
 
   // start sequence: send "read TRX status" command to radio.
@@ -86,10 +106,34 @@ void loop() {
     // Lecture/affichage S-meter
     sMeter();
   }
-  else if (trxVal1 != 0) { // Si TX != OFF
-    digitalWrite(13, HIGH);
+  else if ((trxVal1 != 0) && (digitalRead(sPwr) == LOW)) { // Si TX = ON et Switch Pwr = ON
+    digitalWrite(13, HIGH);   // turn the LED on
     // Lecture/affichage Power-meter
     powerMeter();
+  }
+
+  else if ((trxVal1 != 0) && (digitalRead(sSwr) == LOW)) { // Si TX = ON et Switch SWR = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage Power-meter
+    swrMeter();
+  }
+
+  else if ((trxVal1 != 0) && (digitalRead(sAlc) == LOW)) { // Si TX = ON et Switch ALC = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage ALC-meter
+    alcMeter();
+  }
+
+  else if ((trxVal1 != 0) && (digitalRead(sComp) == LOW)) { // Si TX = ON et Switch Comp = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage Comp-meter
+    compMeter();
+  }
+
+  else if ((trxVal1 != 0) && (digitalRead(sVolt) == LOW)) { // Si TX = ON et Switch Volt = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage Volt-meter
+    voltMeter();
   }
 
   // Routine RGB
@@ -170,3 +214,130 @@ void powerMeter() {
       }
     }
   }
+
+void swrMeter() {
+    mySerial.flush();
+
+    // start sequence: send "read S meter" command to radio.
+    mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(TRX_address); mySerial.write(0xE0);
+    mySerial.write(0x15); mySerial.write(0x12); // Read SWR-meter , command 15 12
+    mySerial.write(0xFD); // end sequence
+    delay(20);
+
+    // now read info from radio
+    int nbChar = mySerial.available();
+
+    if (nbChar > 0) {
+      for (int readCounter = 0; readCounter < nbChar ; readCounter++) {
+        byte byteRead = mySerial.read();
+
+        if (readCounter == 6) {
+          sMeterVal1 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // First byte: convert from BCD to decimal.
+        }
+
+        if (readCounter == 7) {
+          sMeterVal2 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // Second byte: convert from BCD to decimal.
+
+          analogWrite(sMeterOut, ((sMeterVal1 * 100) + sMeterVal2)); // Calculate and write the S-meter value on the S-meter output pin.
+          delay(20);
+        }
+      }
+    }
+  }
+
+void alcMeter() {
+    mySerial.flush();
+
+    // start sequence: send "read S meter" command to radio.
+    mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(TRX_address); mySerial.write(0xE0);
+    mySerial.write(0x15); mySerial.write(0x13); // Read ALC-meter , command 15 13
+    mySerial.write(0xFD); // end sequence
+    delay(20);
+
+    // now read info from radio
+    int nbChar = mySerial.available();
+
+    if (nbChar > 0) {
+      for (int readCounter = 0; readCounter < nbChar ; readCounter++) {
+        byte byteRead = mySerial.read();
+
+        if (readCounter == 6) {
+          sMeterVal1 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // First byte: convert from BCD to decimal.
+        }
+
+        if (readCounter == 7) {
+          sMeterVal2 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // Second byte: convert from BCD to decimal.
+
+          analogWrite(sMeterOut, ((sMeterVal1 * 100) + sMeterVal2)); // Calculate and write the S-meter value on the S-meter output pin.
+          delay(20);
+        }
+      }
+    }
+  }
+
+void compMeter() {
+    mySerial.flush();
+
+    // start sequence: send "read S meter" command to radio.
+    mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(TRX_address); mySerial.write(0xE0);
+    mySerial.write(0x15); mySerial.write(0x14); // Read COMP-meter , command 15 14
+    mySerial.write(0xFD); // end sequence
+    delay(20);
+
+    // now read info from radio
+    int nbChar = mySerial.available();
+
+    if (nbChar > 0) {
+      for (int readCounter = 0; readCounter < nbChar ; readCounter++) {
+        byte byteRead = mySerial.read();
+
+        if (readCounter == 6) {
+          sMeterVal1 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // First byte: convert from BCD to decimal.
+        }
+
+        if (readCounter == 7) {
+          sMeterVal2 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // Second byte: convert from BCD to decimal.
+
+          analogWrite(sMeterOut, ((sMeterVal1 * 100) + sMeterVal2)); // Calculate and write the S-meter value on the S-meter output pin.
+          delay(20);
+        }
+      }
+    }
+  }
+
+void voltMeter() {
+    mySerial.flush();
+
+    // start sequence: send "read S meter" command to radio.
+    mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(TRX_address); mySerial.write(0xE0);
+    mySerial.write(0x15); mySerial.write(0x15); // Read Volt-meter , command 15 15
+    mySerial.write(0xFD); // end sequence
+    delay(20);
+
+    // now read info from radio
+    int nbChar = mySerial.available();
+
+    if (nbChar > 0) {
+      for (int readCounter = 0; readCounter < nbChar ; readCounter++) {
+        byte byteRead = mySerial.read();
+
+        if (readCounter == 6) {
+          sMeterVal1 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // First byte: convert from BCD to decimal.
+        }
+
+        if (readCounter == 7) {
+          sMeterVal2 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // Second byte: convert from BCD to decimal.
+
+          analogWrite(sMeterOut, ((sMeterVal1 * 100) + sMeterVal2)); // Calculate and write the S-meter value on the S-meter output pin.
+          delay(20);
+        }
+      }
+    }
+  }
+
+void blink() {
+  digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(200);               // wait for a second
+  digitalWrite(13, LOW);    // turn the LED off by making the voltage LOW
+  delay(200);               // wait for a second
+}
