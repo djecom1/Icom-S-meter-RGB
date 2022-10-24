@@ -1,6 +1,7 @@
 # Icom-S-meter-RGB
 
-16-oct-2022: Ajout de la lecture de la puissance en emission
+16-oct-2022: Ajout de la lecture de la puissance en emission   
+23-oct-2022: Ajout lecture SWR, Comp, ALC, Tension en emission
 
 
 
