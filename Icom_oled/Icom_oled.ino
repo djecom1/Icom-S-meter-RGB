@@ -331,7 +331,6 @@ void setup()
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);                // needed for SH1306 display
   display.clearDisplay();
 
-  Serial.begin(9600);
   mySerial.begin(BAUD_RATE);
   mySerial.listen();  // only one port can be made to listen with software serial
   // see reference https://www.arduino.cc/en/Reference/SoftwareSerialListen
@@ -342,11 +341,6 @@ void setup()
 
 void loop()
 {
-  unsigned long startMillis = millis();                    // start of sample window
-  unsigned int PeaktoPeak = 0;                             // peak-to-peak level
-  unsigned int SignalMax = 0;
-  unsigned int SignalMin = 1024;
-
   // read and display S-meter value
   mySerial.flush();
 
@@ -369,37 +363,18 @@ void loop()
 
       if (readCounter == 7) {
         sMeterVal2 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // Second byte: convert from BCD to decimal.
-
-        //analogWrite(sMeterOut, ((sMeterVal1 * 100) + sMeterVal2)); // Calculate and write the S-meter value on the S-meter output pin.
         sample = ((sMeterVal1 * 100) + sMeterVal2);
         //delay(20);
-
-
       }
     }
   }
-  //Debug
-    Serial.print("Valeur de sample : ");
-    Serial.println(sample);
-    
   
-
-  PeaktoPeak = sample;                      // max - min = peak-peak amplitude
-  //Debug
-  Serial.print("Valeur de PeaktoPeak : ");
-  Serial.println(PeaktoPeak);
-
-  float MeterValue = PeaktoPeak * 330 / 1024;              // convert volts to arrow information
-  //Debug
-  Serial.print("Valeur de MeterValue : ");
-  Serial.println(MeterValue);
-  Serial.println(" ");
+  float MeterValue = sample * 400 / 1024;              // *330 convert volts to arrow information
 
   /****************************************************
     End of code taken from Adafruit Sound Level Sketch
   *****************************************************/
 
-  //MeterValue = MeterValue - 20;                            // shifts needle to zero position
   MeterValue = MeterValue - 34;                            // shifts needle to zero position
   display.clearDisplay();                                  // refresh display for next step
   display.drawBitmap(0, 0, S_Meter, 128, 64, WHITE);       // draws background
