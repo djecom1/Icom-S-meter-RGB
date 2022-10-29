@@ -378,30 +378,13 @@ void loop()
       }
     }
   }
-
-  //test
-  while ( millis() - startMillis < sampleWindow ) {
-
-    //sample = ((sMeterVal1 * 100) + sMeterVal2);
-    //Debug
+  //Debug
     Serial.print("Valeur de sample : ");
     Serial.println(sample);
+    
+  
 
-    if (sample < 1024) {
-
-      if (sample > SignalMax) {
-
-        SignalMax = sample;                                // saves just the max levels
-      }
-
-      else if (sample < SignalMin) {
-
-        SignalMin = sample;                                // saves just the min levels
-      }
-    }
-  }
-
-  PeaktoPeak = SignalMax - SignalMin;                      // max - min = peak-peak amplitude
+  PeaktoPeak = sample;                      // max - min = peak-peak amplitude
   //Debug
   Serial.print("Valeur de PeaktoPeak : ");
   Serial.println(PeaktoPeak);
@@ -416,8 +399,8 @@ void loop()
     End of code taken from Adafruit Sound Level Sketch
   *****************************************************/
 
-  MeterValue = MeterValue - 20;                            // shifts needle to zero position
-  //MeterValue = MeterValue - 34;                            // shifts needle to zero position
+  //MeterValue = MeterValue - 20;                            // shifts needle to zero position
+  MeterValue = MeterValue - 34;                            // shifts needle to zero position
   display.clearDisplay();                                  // refresh display for next step
   display.drawBitmap(0, 0, S_Meter, 128, 64, WHITE);       // draws background
   int a1 = (hMeter + (sin(MeterValue / 57.296) * rMeter)); // meter needle horizontal coordinate
