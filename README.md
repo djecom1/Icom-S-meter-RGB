@@ -12,7 +12,7 @@ Sources :
 [LED RGB](https://www.robot-maker.com/shop/blog/52_controler-led-rvb-arduino.html)
 
 Avant de compiler ce code : Renseigner la vitesse (ligne 7) et le code hexadécimal CI-V (ligne 8) correspondant à la radio.
-A tester, le code OxOO fonctionnerait pour toutes les radios.
+~~A tester, le code OxOO fonctionnerait pour toutes les radios.~~
 
 ![Alt text](https://github.com/djecom1/Icom-S-meter-RGB/blob/main/Icom_CI-V_S-meter.jpg "Icom_CI-V_S-meter")
 
