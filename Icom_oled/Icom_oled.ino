@@ -1,11 +1,15 @@
 // IC7300 Testbed for S-meter readout and other functions
 // by Luc Decroos - ON7DQ/KF0CR
-// modified & adapted by Daniel VE2BAP, 2018-12-01
+// modified & adapted by Daniel VE2BAP, 2018-Dec
+// modified by Jerome F4GMU, 2022-Oct
+//   -if using 1.3" Oled display : comment lines   11, 28, xx
+//                                 uncomment lines 12, 29,  
 
 #include <Wire.h>                     // requried to run I2C SH1106
 #include <SPI.h>                      // requried to run I2C SH1106
 #include <Adafruit_GFX.h>             // https://github.com/adafruit/Adafruit-GFX-Library
 #include <Adafruit_SSD1306.h>
+//#include <Adafruit_SH1106.h>       // uncomment for Oled 1.3"
 #include <SoftwareSerial.h> // for comms to IC7000
 
 #define BAUD_RATE 19200     // CI-V speed
@@ -22,6 +26,7 @@
 // On an arduino LEONARDO:   2(SDA),  3(SCL), ...
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+//Adafruit_SH1106 display(OLED_RESET);
 
 // serial connection
 // RX = Icom radio to Arduino  : to pin 2 via resistor 4k7
@@ -329,7 +334,8 @@ void setup()
   pinMode(7, OUTPUT); // CI-V serial communication to IC7000
   pinMode(sMeterOut, OUTPUT); // set sMeterPin for output
 
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);                // needed for SH1306 display
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);                // needed for SSD1306 display
+//  display.begin(SH1106_SWITCHCAPVCC, 0x3C);                // needed for SH1106 display
   display.clearDisplay();
 
   mySerial.begin(BAUD_RATE);
