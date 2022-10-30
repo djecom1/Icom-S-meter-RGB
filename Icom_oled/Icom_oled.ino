@@ -2,8 +2,8 @@
 // by Luc Decroos - ON7DQ/KF0CR
 // modified & adapted by Daniel VE2BAP, 2018-Dec
 // modified by Jerome F4GMU, 2022-Oct
-//   -if using 1.3" Oled display : comment lines   11, 28, xx
-//                                 uncomment lines 12, 29,  
+//   -if using 1.3" Oled display : comment lines   11, 28, 337
+//                                 uncomment lines 12, 29, 338 
 
 #include <Wire.h>                     // requried to run I2C SH1106
 #include <SPI.h>                      // requried to run I2C SH1106
