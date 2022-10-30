@@ -33,6 +33,7 @@ int readCounter; // counts the number of bytes received from the radio
 int sMeterVal1;  // stores the most  significant BCD byte containing signal info.
 int sMeterVal2;  // stores the least significant BCD byte containing signal info.
 int sMeterOut = 11; // External analog S-meter connected to pin 11.
+int trxVal1;      // TRX info
 
 int hMeter = 65;                      // horizontal center for needle animation
 int vMeter = 85;                      // vertical center for needle animation (outside of dislay limits)
@@ -322,7 +323,7 @@ static const unsigned char PROGMEM S_Meter[] = {
 
 void setup()
 {
-  pinMode(13, OUTPUT); digitalWrite(13, LOW); // force LED (pin 13) to turn off.
+  pinMode(13, OUTPUT); // force LED (pin 13) to turn off.
 
   pinMode(2, INPUT);  // CI-V serial communication from IC7000
   pinMode(7, OUTPUT); // CI-V serial communication to IC7000
@@ -341,6 +342,65 @@ void setup()
 
 void loop()
 {
+  mySerial.flush();
+
+  // start sequence: send "read TRX status" command to radio.
+  mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(TRX_address); mySerial.write(0xE0);
+  mySerial.write(0x1C); mySerial.write((byte)00); // Read Transmit ON/OFF , command 1C 00
+  mySerial.write(0xFD); // end sequence
+  delay(20);
+
+  // now read info from radio
+  int nbChar = mySerial.available();
+
+  if (nbChar > 0) {
+    for (int readCounter = 0; readCounter < nbChar ; readCounter++) {
+      byte byteRead = mySerial.read();
+
+      if (readCounter == 6) {
+        trxVal1 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // First byte: convert from BCD to decimal.
+      }
+    }
+  }
+
+  if (trxVal1 == 0) { // Si TX = OFF
+    digitalWrite(13, LOW);
+    // Lecture/affichage S-meter
+    sMeter();
+  }
+  else if (trxVal1 != 0) { // Si TX = ON et Switch Pwr = ON
+//  else if ((trxVal1 != 0) && (digitalRead(sPwr) == LOW)) { // Si TX = ON et Switch Pwr = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage Power-meter
+    powerMeter();
+  }
+/*
+  else if ((trxVal1 != 0) && (digitalRead(sSwr) == LOW)) { // Si TX = ON et Switch SWR = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage Power-meter
+    swrMeter();
+  }
+
+  else if ((trxVal1 != 0) && (digitalRead(sAlc) == LOW)) { // Si TX = ON et Switch ALC = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage ALC-meter
+    alcMeter();
+  }
+
+  else if ((trxVal1 != 0) && (digitalRead(sComp) == LOW)) { // Si TX = ON et Switch Comp = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage Comp-meter
+    compMeter();
+  }
+
+  else if ((trxVal1 != 0) && (digitalRead(sVolt) == LOW)) { // Si TX = ON et Switch Volt = ON
+    digitalWrite(13, HIGH);   // turn the LED on
+    // Lecture/affichage Volt-meter
+    voltMeter();
+  }*/
+}
+
+void sMeter() {
   // read and display S-meter value
   mySerial.flush();
 
@@ -378,6 +438,50 @@ void loop()
   MeterValue = MeterValue - 34;                            // shifts needle to zero position
   display.clearDisplay();                                  // refresh display for next step
   display.drawBitmap(0, 0, S_Meter, 128, 64, WHITE);       // draws background
+  int a1 = (hMeter + (sin(MeterValue / 57.296) * rMeter)); // meter needle horizontal coordinate
+  int a2 = (vMeter - (cos(MeterValue / 57.296) * rMeter)); // meter needle vertical coordinate
+  display.drawLine(a1, a2, hMeter, vMeter, WHITE);         // draws needle
+  display.display();
+}
+
+void powerMeter() {
+  // read and display S-meter value
+  mySerial.flush();
+
+  // start sequence: send "read S meter" command to radio.
+  mySerial.write(0xFE); mySerial.write(0xFE); mySerial.write(TRX_address); mySerial.write(0xE0);
+  mySerial.write(0x15); mySerial.write(0x11); // Read power-meter , command 15 11
+  mySerial.write(0xFD); // end sequence
+  delay(20);
+
+  // now read info from radio
+  int nbChar = mySerial.available();
+
+  if (nbChar > 0) {
+    for (int readCounter = 0; readCounter < nbChar ; readCounter++) {
+      byte byteRead = mySerial.read();
+
+      if (readCounter == 6) {
+        sMeterVal1 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // First byte: convert from BCD to decimal.
+      }
+
+      if (readCounter == 7) {
+        sMeterVal2 = ( (byteRead / 16 * 10) + (byteRead % 16) ); // Second byte: convert from BCD to decimal.
+        sample = ((sMeterVal1 * 100) + sMeterVal2);
+        //delay(20);
+      }
+    }
+  }
+  
+  float MeterValue = sample * 400 / 1024;              // *330 convert volts to arrow information
+
+  /****************************************************
+    End of code taken from Adafruit Sound Level Sketch
+  *****************************************************/
+
+  MeterValue = MeterValue - 34;                            // shifts needle to zero position
+  display.clearDisplay();                                  // refresh display for next step
+  display.drawBitmap(0, 0, PowerMeter, 128, 64, WHITE);       // draws background
   int a1 = (hMeter + (sin(MeterValue / 57.296) * rMeter)); // meter needle horizontal coordinate
   int a2 = (vMeter - (cos(MeterValue / 57.296) * rMeter)); // meter needle vertical coordinate
   display.drawLine(a1, a2, hMeter, vMeter, WHITE);         // draws needle
