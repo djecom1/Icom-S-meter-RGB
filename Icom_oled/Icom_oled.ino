@@ -2,8 +2,8 @@
 // by Luc Decroos - ON7DQ/KF0CR
 // modified & adapted by Daniel VE2BAP, 2018-Dec
 // modified by Jerome F4GMU, 2022-Oct
-//   -if using 1.3" Oled display : comment lines   11, 28, 337
-//                                 uncomment lines 12, 29, 338 
+//   -if using 1.3" Oled display : comment lines   11, 35, 339
+//                                 uncomment lines 12, 36, 340 
 
 #include <Wire.h>                     // requried to run I2C SH1106
 #include <SPI.h>                      // requried to run I2C SH1106
@@ -11,9 +11,16 @@
 #include <Adafruit_SSD1306.h>
 //#include <Adafruit_SH1106.h>       // uncomment for Oled 1.3"
 #include <SoftwareSerial.h> // for comms to IC7000
+#include <fix_fft.h>
 
 #define BAUD_RATE 19200     // CI-V speed
 #define TRX_address (0x88)  // HEX $70 = Icom IC-7000
+
+// FFT test
+#define vu_meter_input A1             // vu-Meter analog input
+char im[128], data[128];                              //variables for the FFT
+char x = 0, ylim = 60;                                //variables for drawing the graphics
+int i = 0;
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -433,7 +440,7 @@ void sMeter() {
     }
   }
   
-  float MeterValue = sample * 400 / 1024;              // *330 convert volts to arrow information
+  float MeterValue = sample * 380 / 1024;              // *330 convert volts to arrow information
 
   /****************************************************
     End of code taken from Adafruit Sound Level Sketch
@@ -477,7 +484,7 @@ void powerMeter() {
     }
   }
   
-  float MeterValue = sample * 400 / 1024;              // *330 convert volts to arrow information
+  float MeterValue = sample * 300 / 1024;              // *330 convert volts to arrow information
 
   /****************************************************
     End of code taken from Adafruit Sound Level Sketch
@@ -490,4 +497,28 @@ void powerMeter() {
   int a2 = (vMeter - (cos(MeterValue / 57.296) * rMeter)); // meter needle vertical coordinate
   display.drawLine(a1, a2, hMeter, vMeter, WHITE);         // draws needle
   display.display();
+}
+
+void dsp_FFT() {
+  int min = 1024, max = 0;                            //set minumum & maximum ADC values
+  for (i = 0; i < 128; i++) {                         //take 128 samples
+    val = analogRead(vu_meter_input);                             //get audio from Analog 1
+    data[i] = val / 2 - 128;                          //each element of array is val/4-128
+    im[i] = 0;                                        //
+    if (val > max) max = val;                         //capture maximum level
+    if (val < min) min = val;                         //capture minimum level
+  };
+
+  fix_fft(data, im, 7, 0);                            //perform the FFT on data
+
+  display.clearDisplay();                             //clear display
+  for (i = 1; i < 64; i++) {                          // In the current design, 60Hz and noise
+    int dat = 3 * sqrt(data[i] * data[i] + im[i] * im[i]); //filter out noise and hum
+
+    display.drawLine(i * 2 + x, ylim, i * 2 + x, ylim - dat, WHITE); // draw bar graphics for freqs above 500Hz to buffer
+  };
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);                            //set cursor to top of screen
+  display.print("  Audio Spectrum");             //print title to buffer
+  display.display();                                  //show the buffer
 }
