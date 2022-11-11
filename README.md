@@ -9,7 +9,7 @@
 
 Sources :   
 [Icom CI-V](https://www.hackster.io/ddufault/external-s-meter-on-icom-radios-with-ci-v-port-d4e783#code)   
-[LED RGB](https://www.robot-maker.com/shop/blog/52_controler-led-rvb-arduino.html)
+[LED RGB](https://www.robot-maker.com/shop/blog/52_controler-led-rvb-arduino.html)   
 [Oled](https://kv4qb.blogspot.com/2018/04/stand-alone-simulated-analog-meter.html)   
 
 Avant de compiler ce code : Renseigner la vitesse (ligne 7) et le code hexadécimal CI-V (ligne 8) correspondant à la radio.
